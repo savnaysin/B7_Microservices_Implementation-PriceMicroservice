@@ -10,8 +10,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cloud.autoconfigure.RefreshAutoConfiguration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -25,6 +27,7 @@ import b7.savsi.implementation.price.entity.Price;
 import b7.savsi.implementation.price.repository.PriceRepository;
 
 @RunWith(SpringRunner.class)
+@ImportAutoConfiguration(RefreshAutoConfiguration.class)
 @WebMvcTest(value = PriceController.class, secure = false)
 public class PriceControllerTest {
 
@@ -72,9 +75,24 @@ public class PriceControllerTest {
 	}
 
 	@Test
+	public void testAddPriceInfoBadRequest() throws Exception {
+		String priceJson = "{\"price\": 30000.00,\"productId\": 1002,\"currency\":\"INR\"}";
+		Price mockPriceInfo = new Price(new BigDecimal(30000.00), 1002, "INR");
+		Mockito.when(mockPriceRepository.save(Mockito.any(Price.class))).thenReturn(mockPriceInfo);
+
+		RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/addPrice").accept(MediaType.APPLICATION_JSON)
+				.content(priceJson).contentType(MediaType.APPLICATION_JSON);
+
+		MvcResult result = mockMvc.perform(requestBuilder).andReturn();
+
+		MockHttpServletResponse response = result.getResponse();
+		Assert.assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
+	}
+	
+	
+	@Test
 	public void testAddPriceInfoNoContent() throws Exception {
 		String priceJson = "{\"price\": 30.00,\"productId\": 1002,\"currency\":\"INR\"}";
-		Price mockPriceInfo = new Price(new BigDecimal(30.00), 1002, "INR");
 		Mockito.when(mockPriceRepository.save(Mockito.any(Price.class))).thenReturn(null);
 
 		RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/addPrice").accept(MediaType.APPLICATION_JSON)
