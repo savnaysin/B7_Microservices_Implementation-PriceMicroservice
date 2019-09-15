@@ -2,8 +2,6 @@ package b7.savsi.implementation.price.controller;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.math.BigDecimal;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +39,7 @@ public class PriceControllerTest {
 
 	@Test
 	public void testGetPriceInfoSuccess() throws Exception {
-		Price mockPriceInfo = new Price(new BigDecimal(20.00), 1003, "USD");
+		Price mockPriceInfo = new Price(20.00, 1003, "USD");
 		Mockito.when(mockPriceRepository.findByProductIdOrderByUpdatedOn(Mockito.anyInt())).thenReturn(mockPriceInfo);
 		RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/priceInfo/1003")
 				.accept(MediaType.APPLICATION_JSON);
@@ -61,7 +59,7 @@ public class PriceControllerTest {
 	@Test
 	public void testAddPriceInfoSuccess() throws Exception {
 		String priceJson = "{\"price\": 30.00,\"productId\": 1002,\"currency\":\"INR\"}";
-		Price mockPriceInfo = new Price(new BigDecimal(30.00), 1002, "INR");
+		Price mockPriceInfo = new Price(30.00, 1002, "INR");
 		Mockito.when(mockPriceRepository.save(Mockito.any(Price.class))).thenReturn(mockPriceInfo);
 
 		RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/addPrice").accept(MediaType.APPLICATION_JSON)
@@ -77,7 +75,7 @@ public class PriceControllerTest {
 	@Test
 	public void testAddPriceInfoBadRequest() throws Exception {
 		String priceJson = "{\"price\": 30000.00,\"productId\": 1002,\"currency\":\"INR\"}";
-		Price mockPriceInfo = new Price(new BigDecimal(30000.00), 1002, "INR");
+		Price mockPriceInfo = new Price(30000.00, 1002, "INR");
 		Mockito.when(mockPriceRepository.save(Mockito.any(Price.class))).thenReturn(mockPriceInfo);
 
 		RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/addPrice").accept(MediaType.APPLICATION_JSON)

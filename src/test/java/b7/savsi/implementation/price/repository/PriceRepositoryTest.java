@@ -3,8 +3,6 @@ package b7.savsi.implementation.price.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import java.math.BigDecimal;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,18 +23,18 @@ public class PriceRepositoryTest {
 
 	@Test
 	public void testFindByProductIdOrderByUpdatedOn() {
-		Price newPrice = new Price(new BigDecimal(20.00), 1001, "USD");
+		Price newPrice = new Price(20.00, 1001, "USD");
 		Integer savedProductId = testEntityManager.persist(newPrice).getProductId();
 		testEntityManager.flush();
-		assertEquals("testFindById:TC1", new BigDecimal(20.00),
+		assertEquals("testFindById:TC1",new Double(20.00),
 				priceRepository.findByProductIdOrderByUpdatedOn(savedProductId).getPrice());
 		assertEquals("testFindById:TC2", null, priceRepository.findByProductIdOrderByUpdatedOn(123));
 	}
 
 	@Test
 	public void testSave() {
-		Price priceFound = priceRepository.save(new Price(new BigDecimal(20.00), 1001, "USD"));
-		assertThat(priceFound).hasFieldOrPropertyWithValue("price", new BigDecimal(20.00));
+		Price priceFound = priceRepository.save(new Price(20.00, 1001, "USD"));
+		assertThat(priceFound).hasFieldOrPropertyWithValue("price", 20.00);
 		assertThat(priceFound).hasFieldOrPropertyWithValue("currency", "USD");
 
 	}

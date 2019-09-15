@@ -1,7 +1,6 @@
 package b7.savsi.implementation.price.entity;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.persistence.Entity;
@@ -18,7 +17,7 @@ public class Price implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	private Integer priceId;
-	private BigDecimal price;
+	private Double price;
 	private Integer productId;
 	private String currency;
 	@CreationTimestamp
@@ -36,11 +35,11 @@ public class Price implements Serializable {
 		this.priceId = priceId;
 	}
 
-	public BigDecimal getPrice() {
+	public Double getPrice() {
 		return price;
 	}
 
-	public void setPrice(BigDecimal price) {
+	public void setPrice(Double price) {
 		this.price = price;
 	}
 
@@ -72,7 +71,7 @@ public class Price implements Serializable {
 		this.updatedOn = updatedOn;
 	}
 
-	public Price(BigDecimal price, Integer productId, String currency) {
+	public Price(Double price, Integer productId, String currency) {
 		super();
 		this.price = price;
 		this.productId = productId;
