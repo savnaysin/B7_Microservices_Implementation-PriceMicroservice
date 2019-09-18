@@ -2,6 +2,9 @@ package b7.savsi.implementation.price.controller;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +44,7 @@ public class PriceControllerTest {
 	public void testGetPriceInfoSuccess() throws Exception {
 		Price mockPriceInfo = new Price(20.00, 1003, "USD");
 		Mockito.when(mockPriceRepository.findByProductIdOrderByUpdatedOn(Mockito.anyInt())).thenReturn(mockPriceInfo);
-		RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/priceInfo/1003")
+		RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/price/priceInfo/1003")
 				.accept(MediaType.APPLICATION_JSON);
 		MvcResult result = mockMvc.perform(requestBuilder).andReturn();
 		String expectedPriceJson = "{\"price\": 20.00,\"productId\": 1003,\"currency\":\"USD\"}";
@@ -51,7 +54,28 @@ public class PriceControllerTest {
 
 	@Test
 	public void testGetPriceInfoNotFound() throws Exception {
-		RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/priceInfo/1004")
+		RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/price/priceInfo/1004")
+				.accept(MediaType.APPLICATION_JSON);
+		mockMvc.perform(requestBuilder).andExpect(status().isNotFound());
+	}
+
+	@Test
+	public void testGetPriceInfoListSuccess() throws Exception {
+		List<Price> mockPriceInfoList = new ArrayList<Price>();
+		mockPriceInfoList.add(new Price(20.00, 1003, "USD"));
+		mockPriceInfoList.add(new Price(30.00, 1004, "USD"));
+		Mockito.when(mockPriceRepository.findByProductIdOrderByUpdatedOn(Mockito.anyInt())).thenReturn(new Price(20.00, 1003, "USD")).thenReturn(new Price(30.00, 1004, "INR"));
+		RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/price/priceInfoList/1003,1004")
+				.accept(MediaType.APPLICATION_JSON);
+		MvcResult result = mockMvc.perform(requestBuilder).andReturn();
+		String expectedPriceJson = "[{\"price\": 20.00,\"productId\": 1003,\"currency\":\"USD\"},{\"price\": 30.00,\"productId\": 1004,\"currency\":\"INR\"}]";
+
+		JSONAssert.assertEquals(expectedPriceJson, result.getResponse().getContentAsString(), false);
+	}
+
+	@Test
+	public void testGetPriceInfoListNotFound() throws Exception {
+		RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/price/priceInfoList/1005,1006")
 				.accept(MediaType.APPLICATION_JSON);
 		mockMvc.perform(requestBuilder).andExpect(status().isNotFound());
 	}
@@ -62,8 +86,8 @@ public class PriceControllerTest {
 		Price mockPriceInfo = new Price(30.00, 1002, "INR");
 		Mockito.when(mockPriceRepository.save(Mockito.any(Price.class))).thenReturn(mockPriceInfo);
 
-		RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/addPrice").accept(MediaType.APPLICATION_JSON)
-				.content(priceJson).contentType(MediaType.APPLICATION_JSON);
+		RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/price/addPrice")
+				.accept(MediaType.APPLICATION_JSON).content(priceJson).contentType(MediaType.APPLICATION_JSON);
 
 		MvcResult result = mockMvc.perform(requestBuilder).andReturn();
 
@@ -78,23 +102,22 @@ public class PriceControllerTest {
 		Price mockPriceInfo = new Price(30000.00, 1002, "INR");
 		Mockito.when(mockPriceRepository.save(Mockito.any(Price.class))).thenReturn(mockPriceInfo);
 
-		RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/addPrice").accept(MediaType.APPLICATION_JSON)
-				.content(priceJson).contentType(MediaType.APPLICATION_JSON);
+		RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/price/addPrice")
+				.accept(MediaType.APPLICATION_JSON).content(priceJson).contentType(MediaType.APPLICATION_JSON);
 
 		MvcResult result = mockMvc.perform(requestBuilder).andReturn();
 
 		MockHttpServletResponse response = result.getResponse();
 		Assert.assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
 	}
-	
-	
+
 	@Test
 	public void testAddPriceInfoNoContent() throws Exception {
 		String priceJson = "{\"price\": 30.00,\"productId\": 1002,\"currency\":\"INR\"}";
 		Mockito.when(mockPriceRepository.save(Mockito.any(Price.class))).thenReturn(null);
 
-		RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/addPrice").accept(MediaType.APPLICATION_JSON)
-				.content(priceJson).contentType(MediaType.APPLICATION_JSON);
+		RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/price/addPrice")
+				.accept(MediaType.APPLICATION_JSON).content(priceJson).contentType(MediaType.APPLICATION_JSON);
 
 		MvcResult result = mockMvc.perform(requestBuilder).andReturn();
 

@@ -1,6 +1,8 @@
 package b7.savsi.implementation.price.controller;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -26,7 +28,7 @@ public class PriceController {
 	@Autowired
 	PriceRepository priceRepository;
 
-	@GetMapping(path = "/priceInfo/{productId}")
+	@GetMapping(path = "/price/priceInfo/{productId}")
 	public ResponseEntity<Price> getPriceInfo(@PathVariable("productId") Integer productId) throws NotFoundException {
 		Price price = priceRepository.findByProductIdOrderByUpdatedOn(productId);
 		if (price == null)
@@ -34,7 +36,21 @@ public class PriceController {
 		return ResponseEntity.ok().body(price);
 	}
 
-	@PostMapping(path = "/addPrice", consumes = "application/json", produces = "application/json")
+	@GetMapping(path = "/price/priceInfoList/{productIds}")
+	public ResponseEntity<List<Price>> getPriceList(@PathVariable List<Integer> productIds) throws NotFoundException {
+		List<Price> priceList = new ArrayList<Price>();
+		Price price = null;
+		for (Integer productId : productIds) {
+			price = priceRepository.findByProductIdOrderByUpdatedOn(productId);
+			if (price != null)
+				priceList.add(price);
+		}
+		if (priceList.isEmpty())
+			throw new NotFoundException("No Prices Found for any of the product ids");
+		return ResponseEntity.ok().body(priceList);
+	}
+
+	@PostMapping(path = "/price/addPrice", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<Void> addPriceInfo(@RequestBody Price price) throws BadRequestException {
 		if (price.getPrice() >= new Double(env.getProperty("price.minValue"))
 				&& price.getPrice() <= new Double(env.getProperty("price.maxValue"))) {
