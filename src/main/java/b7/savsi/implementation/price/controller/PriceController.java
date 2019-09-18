@@ -36,11 +36,6 @@ public class PriceController {
 
 	@PostMapping(path = "/addPrice", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<Void> addPriceInfo(@RequestBody Price price) throws BadRequestException {
-		System.out.println(new Double(env.getProperty("price.minValue")));
-		System.out.println(new Double(env.getProperty("price.maxValue")));
-		System.out.println(price.getPrice());
-		System.out.println(price.getPrice() >= new Double(env.getProperty("price.minValue")));
-		System.out.println(price.getPrice() <= new Double(env.getProperty("price.maxValue")));
 		if (price.getPrice() >= new Double(env.getProperty("price.minValue"))
 				&& price.getPrice() <= new Double(env.getProperty("price.maxValue"))) {
 			Price newPrice = priceRepository
