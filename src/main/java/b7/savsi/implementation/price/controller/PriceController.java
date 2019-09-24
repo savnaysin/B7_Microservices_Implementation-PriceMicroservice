@@ -8,9 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -50,8 +52,17 @@ public class PriceController {
 		return ResponseEntity.ok().body(priceList);
 	}
 
+	@DeleteMapping(path = "/price/removePrice/{productId}")
+	public Void deletePriceInfo(@PathVariable("productId") Integer productId) throws NotFoundException {
+		Price price = priceRepository.findByProductIdOrderByUpdatedOn(productId);
+		if (price == null)
+			throw new NotFoundException("No Price Found for the product id:: " + productId);
+		priceRepository.delete(price);
+		return null;
+	}
+
 	@PostMapping(path = "/price/addPrice", consumes = "application/json", produces = "application/json")
-	public ResponseEntity<Void> addPriceInfo(@RequestBody Price price) throws BadRequestException {
+	public ResponseEntity<Void> updatePriceInfo(@RequestBody Price price) throws BadRequestException {
 		if (price.getPrice() >= new Double(env.getProperty("price.minValue"))
 				&& price.getPrice() <= new Double(env.getProperty("price.maxValue"))) {
 			Price newPrice = priceRepository
@@ -63,6 +74,26 @@ public class PriceController {
 			URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
 					.buildAndExpand(newPrice.getPriceId()).toUri();
 			return ResponseEntity.created(location).build();
+		} else
+			throw new BadRequestException("Price should be between minValue: " + env.getProperty("price.minValue")
+					+ " & maxValue: " + env.getProperty("price.maxValue"));
+
+	}
+
+	@PutMapping(path = "/price/updatePrice", consumes = "application/json", produces = "application/json")
+	public Price addPriceInfo(@RequestBody Price price) throws Exception {
+		Integer productId = price.getProductId();
+		if (price.getPrice() >= new Double(env.getProperty("price.minValue"))
+				&& price.getPrice() <= new Double(env.getProperty("price.maxValue"))) {
+			Price updatedprice = priceRepository.findByProductIdOrderByUpdatedOn(productId);
+			if (updatedprice == null)
+				throw new NotFoundException("No Price Found for the product id:: " + productId);
+			else {
+				updatedprice.setPrice(price.getPrice());
+				updatedprice.setCurrency(price.getCurrency());
+				Price newPrice = priceRepository.save(updatedprice);
+				return newPrice;
+			}
 		} else
 			throw new BadRequestException("Price should be between minValue: " + env.getProperty("price.minValue")
 					+ " & maxValue: " + env.getProperty("price.maxValue"));

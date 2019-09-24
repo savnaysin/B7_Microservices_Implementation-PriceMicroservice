@@ -7,4 +7,6 @@ import b7.savsi.implementation.price.entity.Price;
 @Repository
 public interface PriceRepository extends JpaRepository<Price, Integer> {
 	Price findByProductIdOrderByUpdatedOn(Integer productId);
+
+	void deleteByProductId(Integer productId);
 }
